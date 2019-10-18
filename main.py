@@ -1,4 +1,5 @@
 from anilist import *
+from trello import *
 from multiprocessing import Process
 from credentials import vkRaccoonBotID, vkRaccoonBotKey, vkPersUserID
 from time import sleep
@@ -77,3 +78,4 @@ def main():
 if __name__ == '__main__':
     Process(target=main).start()
     Process(target=al_check).start()
+    Process(target=trello_socket).start()
