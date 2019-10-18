@@ -1,21 +1,12 @@
 from anilist import *
 from trello import *
 from multiprocessing import Process
-from credentials import vkRaccoonBotID, vkRaccoonBotKey, vkPersUserID
+from credentials import vkRaccoonBotID, vkPersUserID
 from time import sleep
 
 server = ''
 key = ''
 token = ''
-
-
-def vkMsg(peer_id, msg=None, attach=None):
-    payload = {'access_token': vkRaccoonBotKey, 'v': '5.80',
-               'message': msg,
-               'peer_id': peer_id,
-               'attachment': attach}
-    res = requests.get('https://api.vk.com/method/messages.send', params=payload).json()
-    return res
 
 
 def handleUpdate(update):
