@@ -1,5 +1,5 @@
 import socket
-from json import loads, dumps
+from json import loads
 from credentials import trello_key, trello_token, vkPersUserID
 from utils import *
 

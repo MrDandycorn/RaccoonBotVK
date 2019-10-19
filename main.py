@@ -2,7 +2,6 @@ from anilist import *
 from trello import *
 from multiprocessing import Process
 from credentials import vkRaccoonBotID, vkPersUserID
-from time import sleep
 
 server = ''
 key = ''
@@ -42,16 +41,6 @@ def longPoll(ts):
         for update in updates:
             Process(target=handleUpdate, args=[update]).start()
         return ts
-
-
-def al_check():
-    while True:
-        notifs = update_notifications()
-        if notifs:
-            for notif in notifs:
-                vkMsg(vkPersUserID, notif)
-        print('Notifications Checked!')
-        sleep(150)
 
 
 def main():
