@@ -1,5 +1,7 @@
 from anilist import *
 from trello import *
+from mangatown import *
+from time import sleep
 from multiprocessing import Process
 from credentials import vkRaccoonBotID, vkPersUserID
 
@@ -43,6 +45,19 @@ def longPoll(ts):
         return ts
 
 
+def all_cycle():
+    print('Основной цикл запущен')
+    while True:
+        try:
+            al_check()
+            update_rss()
+            update_manga()
+            sleep(60)
+        except Exception as e:
+            print(f'Ошибка: {e}')
+            sleep(60)
+
+
 def main():
     global token
     while True:
@@ -57,5 +72,5 @@ def main():
 
 if __name__ == '__main__':
     Process(target=main).start()
-    Process(target=al_check).start()
     Process(target=trello_socket).start()
+    Process(target=all_cycle).start()

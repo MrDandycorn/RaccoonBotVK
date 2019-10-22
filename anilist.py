@@ -1,7 +1,7 @@
 from credentials import anilist_token, vkPersUserID
 import requests
 from utils import vkMsg
-from time import sleep, time, mktime
+from time import time, mktime
 import feedparser as fp
 
 q = []
@@ -41,28 +41,20 @@ def update_notifications():
 
 
 def update_rss():
-    while True:
-        try:
-            hsubs = fp.parse('http://www.horriblesubs.info/rss.php?res=1080')['entries']
-            for sub in hsubs:
-                dt = sub['published_parsed']
-                if time() - mktime(dt) < 12000:
-                    for _ in range(len(q)):
-                        title = q.pop(0)
-                        if ' '.join(title.split(' ')[0]) in sub['title']:
-                            vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах от HorribleSubs!')
-                        else:
-                            q.append(title)
-            sleep(60)
-        except Exception as e:
-            print(f'Ошибка: {e}')
+    hsubs = fp.parse('http://www.horriblesubs.info/rss.php?res=1080')['entries']
+    for sub in hsubs:
+        dt = sub['published_parsed']
+        if time() - mktime(dt) < 12000:
+            for _ in range(len(q)):
+                title = q.pop(0)
+                if ' '.join(title.split(' ')[0]) in sub['title']:
+                    vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах от HorribleSubs!')
+                else:
+                    q.append(title)
 
 
 def al_check():
-    while True:
-        notifs = update_notifications()
-        if notifs:
-            for notif in notifs:
-                vkMsg(vkPersUserID, notif)
-        update_rss()
-        sleep(150)
+    notifs = update_notifications()
+    if notifs:
+        for notif in notifs:
+            vkMsg(vkPersUserID, notif)
