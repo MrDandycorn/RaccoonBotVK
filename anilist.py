@@ -20,7 +20,7 @@ def graphql_request(query):
 
 
 def get_notifications(count):
-    query = '{Page(perPage:'+str(count)+'){notifications(type_in:[AIRING,RELATED_MEDIA_ADDITION],resetNotificationCount:true){...on AiringNotification{type,episode,media{id,type,title{userPreferred},siteUrl}createdAt}...on RelatedMediaAdditionNotification {type,media{id,type,title{userPreferred},siteUrl}createdAt}}}}'
+    query = 'query{Page(perPage: '+str(count)+') {notifications(type_in: [AIRING, ACTIVITY_MESSAGE, ACTIVITY_REPLY, FOLLOWING, ACTIVITY_MENTION, THREAD_COMMENT_MENTION, THREAD_SUBSCRIBED, THREAD_COMMENT_REPLY, ACTIVITY_LIKE, ACTIVITY_REPLY_LIKE, THREAD_LIKE, THREAD_COMMENT_LIKE, ACTIVITY_REPLY_SUBSCRIBED, RELATED_MEDIA_ADDITION], resetNotificationCount: false) {... on AiringNotification {type,episode,media {id,type,title {userPreferred}}}... on RelatedMediaAdditionNotification {type,media {id,type,title {userPreferred},siteUrl}}... on FollowingNotification {type}... on ActivityMessageNotification {type}... on ActivityMentionNotification {type}... on ActivityReplyNotification {type}... on ActivityReplySubscribedNotification {type}... on ActivityLikeNotification {type}... on ActivityReplyLikeNotification {type}... on ThreadCommentMentionNotification {type}... on ThreadCommentReplyNotification {type}... on ThreadCommentSubscribedNotification {type}... on ThreadCommentLikeNotification {type}... on ThreadLikeNotification {type}}}}'
     return graphql_request(query)['data']['Page']['notifications']
 
 
@@ -36,8 +36,6 @@ def update_notifications():
             elif notif['type'] == 'RELATED_MEDIA_ADDITION':
                 s = 'На сайт добавлено новое аниме: {}\n{}' if notif['media']['type'] == 'ANIME' else 'На сайт добавлена новая манга/новелла: {}\n{}'
                 yield s.format(notif['media']['title']['userPreferred'], notif['media']['siteUrl'].replace('\/', '/'))
-    else:
-        return None
 
 
 def update_rss():
@@ -47,7 +45,7 @@ def update_rss():
         if time() - mktime(dt) < 12000:
             for _ in range(len(q)):
                 title = q.pop(0)
-                if ' '.join(title.split(' ')[0]) in sub['title']:
+                if title.split(' ')[0] in sub['title']:
                     vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах от HorribleSubs!')
                 else:
                     q.append(title)

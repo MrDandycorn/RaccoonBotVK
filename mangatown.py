@@ -9,24 +9,27 @@ def getChapters(url):
     res = requests.get(url).text
     bs = BeautifulSoup(res, features='lxml')
     chaps = bs.find('ul', {'class': 'chapter_list'}).findAll('li')
-    chaps = [chap.a.text.strip() for chap in chaps]
+    chaps = [(chap.a.text.strip(), chap.find('span', {'class': 'time'}).text) for chap in chaps]
     return chaps
 
 
 def initManga(manga):
     chaps = getChapters(manga['url'])
-    manga['latest'] = chaps[0]
+    manga['latest'] = chaps[0][0]
 
 
 def checkManga(manga):
     chaps = getChapters(manga['url'])
-    if chaps[0] != manga['latest']:
+    if chaps[0][0] != manga['latest']:
         news = []
         for chap in chaps:
-            if chap == manga['latest']:
+            if chap[0] == manga['latest']:
                 break
-            news.append(f'Новая глава: {chap}')
-        manga['latest'] = chaps[0]
+            if chap[1] == 'Today':
+                news.append(f'Новая глава: {chap[0]}')
+            else:
+                break
+        manga['latest'] = chaps[0][0]
         for new in reversed(news):
             vkMsg(vkPersUserID, new)
 
