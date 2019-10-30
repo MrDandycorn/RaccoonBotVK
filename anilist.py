@@ -42,7 +42,7 @@ def update_rss():
     hsubs = fp.parse('http://www.horriblesubs.info/rss.php?res=1080')['entries']
     for sub in hsubs:
         dt = sub['published_parsed']
-        if time() - mktime(dt) < 12000:
+        if time() - mktime(dt) < 24000:
             for _ in range(len(q)):
                 title = q.pop(0)
                 if title.split(' ')[0] in sub['title']:
