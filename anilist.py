@@ -3,8 +3,9 @@ import requests
 from utils import vkMsg
 from time import time, mktime
 import feedparser as fp
+import re
 
-q = []
+q = ['Nanatsu no Taizai: Kamigami no Gekirin']
 
 
 def graphql_request(query):
@@ -40,13 +41,16 @@ def update_notifications():
 
 def update_rss():
     hsubs = fp.parse('http://www.horriblesubs.info/rss.php?res=1080')['entries']
-    for sub in hsubs:
+    esubs = fp.parse('https://ru.erai-raws.info/rss-1080/')['entries']
+    for sub in hsubs+esubs:
         dt = sub['published_parsed']
-        if time() - mktime(dt) < 24000:
+        if time() - mktime(dt) < 30000:
+            print(sub)
             for _ in range(len(q)):
                 title = q.pop(0)
-                if title.split(' ')[0] in sub['title']:
-                    vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах от HorribleSubs!')
+                stitle = re.sub(r'\[([^)]+?)]', '', sub['title']).strip()
+                if stitle.startswith(title.split(' ')[0][:3]):
+                    vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах!')
                 else:
                     q.append(title)
 
