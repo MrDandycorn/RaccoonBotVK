@@ -5,7 +5,7 @@ from time import time, mktime
 import feedparser as fp
 import re
 
-q = ['Nanatsu no Taizai: Kamigami no Gekirin']
+q = []
 
 
 def graphql_request(query):
@@ -45,7 +45,6 @@ def update_rss():
     for sub in hsubs+esubs:
         dt = sub['published_parsed']
         if time() - mktime(dt) < 30000:
-            print(sub)
             for _ in range(len(q)):
                 title = q.pop(0)
                 stitle = re.sub(r'\[([^)]+?)]', '', sub['title']).strip()
