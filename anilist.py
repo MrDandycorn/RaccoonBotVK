@@ -4,6 +4,7 @@ from utils import vkMsg
 from time import time, mktime
 import feedparser as fp
 import re
+from datetime import datetime
 
 q = []
 
@@ -39,17 +40,48 @@ def update_notifications():
                 yield s.format(notif['media']['title']['userPreferred'], notif['media']['siteUrl'].replace('\/', '/'))
 
 
+def search_anilist(title):
+    query = 'query{anime:Page(perPage: 20){results: media(type: ANIME, isAdult: false, search: "'+title+'"){title {userPreferred},nextAiringEpisode{episode},status, endDate{year,month,day}}}}'
+    res = graphql_request(query)['data']['anime']['results']
+    if res:
+        for anime in res:
+            if anime['status'] == 'RELEASING':
+                if anime['nextAiringEpisode']:
+                    return anime['title']['userPreferred'], anime['nextAiringEpisode']['episode']
+                return anime['title']['userPreferred'], 0
+            else:
+                if anime['endDate'] and anime['endDate']['day']:
+                    date = anime['endDate']
+                    dt = datetime(year=date['year'], month=date['month'], day=date['day'])
+                    diff = datetime.today()-dt
+                    if diff.days < 10:
+                        if anime['nextAiringEpisode']:
+                            return anime['title']['userPreferred'], anime['nextAiringEpisode']['episode']
+                        return anime['title']['userPreferred'], 0
+    return None
+
+
+def scrape(title):
+    group = 'HorribleSubs' if '[HorribleSubs]' in title else 'Erai-raws'
+    res = re.sub(r'\[([^)]+?)]', '', title.replace('.mkv', ''))
+    ep = re.search(r' [–|-] [0-9]+', res).group()
+    res = res.replace(ep, '').strip()
+    ep = re.search(r'[0-9]+', ep).group()
+    return res, int(ep), group
+
+
 def update_rss():
     hsubs = fp.parse('http://www.horriblesubs.info/rss.php?res=1080')['entries']
     esubs = fp.parse('https://ru.erai-raws.info/rss-1080/')['entries']
     for sub in hsubs+esubs:
         dt = sub['published_parsed']
         if time() - mktime(dt) < 30000:
+            scraped = scrape(sub['title'])
+            info = search_anilist(scraped[0])
             for _ in range(len(q)):
                 title = q.pop(0)
-                stitle = re.sub(r'\[([^)]+?)]', '', sub['title']).strip()
-                if stitle.startswith(title.split(' ')[0][:3]):
-                    vkMsg(vkPersUserID, f'Новая серия {title} вышла в субтитрах!')
+                if info[0] == title:
+                    vkMsg(vkPersUserID, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
                 else:
                     q.append(title)
 
