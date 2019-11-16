@@ -49,11 +49,20 @@ def trello_socket():
                             else:
                                 msg = f'{name} изменил поле {changed} карты "{cname}" на {card[changed]}'
                         elif action['type'] == 'deleteCard':
-                            ents = action["display"]["entities"]
+                            ents = action['display']['entities']
                             msg = f'{name} удалил карту №{ents["idCard"]["text"]} из списка {ents["list"]["text"]}'
                         elif action['type'] == 'commentCard':
                             data = action['data']
-                            msg = f'{name} Оставил комментарий на карте "{data["card"]["name"]}":\n{data["text"]}'
+                            msg = f'{name} оставил комментарий на карте "{data["card"]["name"]}":\n{data["text"]}'
+                        elif action['type'] == 'createCard':
+                            data = action['data']
+                            msg = f'{name} создал карту "{data["card"]["text"]}" в списке {data["list"]["text"]}'
+                        elif action['type'] == 'addMemberToBoard':
+                            ents = action['display']['entities']
+                            msg = f'{ents["memberInviter"]["text"]} пригласил {ents["memberCreator"]["text"]} в доску'
+                        elif action['type'] == 'makeAdminOfBoard':
+                            ents = action['display']['entities']
+                            msg = f'{ents["memberCreator"]["text"]} назначил {ents["member"]["text"]} администратором доски'
                         else:
                             msg = f'Новое уведомление из Trello:\nТип: {action["type"]}\nJson: {str(action["display"])}'
                         vkMsg(vkPersUserID, msg)
