@@ -55,14 +55,17 @@ def trello_socket():
                             data = action['data']
                             msg = f'{name} оставил комментарий на карте "{data["card"]["name"]}":\n{data["text"]}'
                         elif action['type'] == 'createCard':
-                            data = action['data']
-                            msg = f'{name} создал карту "{data["card"]["text"]}" в списке {data["list"]["text"]}'
+                            ents = action['display']['entities']
+                            msg = f'{name} создал карту "{ents["card"]["text"]}" в списке {ents["list"]["text"]}'
                         elif action['type'] == 'addMemberToBoard':
                             ents = action['display']['entities']
                             msg = f'{ents["memberInviter"]["text"]} пригласил {ents["memberCreator"]["text"]} в доску'
                         elif action['type'] == 'makeAdminOfBoard':
                             ents = action['display']['entities']
                             msg = f'{ents["memberCreator"]["text"]} назначил {ents["member"]["text"]} администратором доски'
+                        elif action['type'] == 'makeNormalMemberOfBoard':
+                            ents = action['display']['entities']
+                            msg = f'{ents["memberCreator"]["text"]} назначил {ents["member"]["text"]} обычным участником доски'
                         else:
                             msg = f'Новое уведомление из Trello:\nТип: {action["type"]}\nJson: {str(action["display"])}'
                         vkMsg(vkPersUserID, msg)
