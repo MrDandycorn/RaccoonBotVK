@@ -1,5 +1,5 @@
 from credentials import anilist_token, vkPersUserID
-import httpx
+import aiohttp
 from utils import vkMsg
 from time import time, mktime
 import feedparser as fp
@@ -18,10 +18,9 @@ async def graphql_request(query):
     data = {
         'query': query
     }
-    async with httpx.AsyncClient() as client:
-        res = await client.post(url, headers=headers, data=data)
-        res = res.json()
-    return res
+    async with aiohttp.ClientSession() as session:
+        res = await session.post(url, headers=headers, data=data)
+        return await res.json()
 
 
 async def get_notifications(count):
@@ -79,11 +78,13 @@ def scrape(title):
 async def update_rss():
     while True:
         try:
-            async with httpx.AsyncClient() as client:
-                hsubs = await client.get('http://www.horriblesubs.info/rss.php?res=1080')
-                esubs = await client.get('https://ru.erai-raws.info/rss-1080/')
-            hsubs = fp.parse(hsubs.text)['entries']
-            esubs = fp.parse(esubs.text)['entries']
+            async with aiohttp.ClientSession() as session:
+                hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
+                esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
+                hsubs = await hsubs.text()
+                esubs = await esubs.text()
+            hsubs = fp.parse(hsubs)['entries']
+            esubs = fp.parse(esubs)['entries']
             for sub in hsubs+esubs:
                 dt = sub['published_parsed']
                 if time() - mktime(dt) < 30000:

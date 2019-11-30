@@ -1,7 +1,7 @@
 from json import loads
 from credentials import trello_key, trello_token, vkPersUserID
 from utils import *
-import httpx
+import aiohttp
 
 
 async def get_list(lid):
@@ -9,9 +9,9 @@ async def get_list(lid):
         'key': trello_key,
         'token': trello_token
     }
-    async with httpx.AsyncClient() as client:
-        lst = await client.get(f'https://api.trello.com/1/lists/{lid}/name', params=params)
-        lst = lst.json()
+    async with aiohttp.ClientSession() as session:
+        lst = await session.get(f'https://api.trello.com/1/lists/{lid}/name', params=params)
+        lst = await lst.json()
     return lst['_value']
 
 

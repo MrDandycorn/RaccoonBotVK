@@ -1,4 +1,4 @@
-import httpx
+import aiohttp
 from json import load, dump
 from bs4 import BeautifulSoup
 from utils import vkMsg
@@ -7,9 +7,10 @@ import asyncio
 
 
 async def getChapters(url):
-    async with httpx.AsyncClient() as client:
-        res = await client.get(url)
-    bs = BeautifulSoup(res.text, features='lxml')
+    async with aiohttp.ClientSession() as session:
+        res = await session.get(url)
+        res = await res.text()
+    bs = BeautifulSoup(res, features='lxml')
     chaps = bs.find('ul', {'class': 'chapter_list'}).findAll('li')
     chaps = [(chap.a.text.strip(), chap.find('span', {'class': 'time'}).text) for chap in chaps]
     return chaps

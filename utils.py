@@ -1,4 +1,4 @@
-import httpx
+import aiohttp
 from credentials import vkRaccoonBotKey
 
 
@@ -7,6 +7,6 @@ async def vkMsg(peer_id, msg=None, attach=None):
                'message': msg,
                'peer_id': peer_id,
                'attachment': attach}
-    async with httpx.AsyncClient() as client:
-        res = await client.post('https://api.vk.com/method/messages.send', data=payload)
-    return res.json()
+    async with aiohttp.ClientSession() as session:
+        res = await session.post('https://api.vk.com/method/messages.send', data=payload)
+        return await res.json()
