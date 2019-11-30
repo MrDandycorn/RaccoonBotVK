@@ -95,8 +95,6 @@ async def update_rss():
                             await vkMsg(vkPersUserID, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
                         else:
                             q.append(title)
-        except Exception as e:
-            print(f'Ошибка в update_rss: {e}')
         finally:
             await asyncio.sleep(60)
 
