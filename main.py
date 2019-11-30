@@ -11,8 +11,8 @@ racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or('!'))
 
 
 @racc.listen()
-async def on_ready(info):
-    print(f'Logged in as {info.group.name}')
+async def on_ready():
+    print(f'Logged in as {racc.group.name}')
     loop = asyncio.get_event_loop()
     loop.create_task(update_manga())
     loop.create_task(al_check())
@@ -23,7 +23,7 @@ async def on_ready(info):
 @racc.command(name='ping', pass_context=True, help='Команда для проверки жизнеспособности бота', usage='{}ping')
 async def ping_(ctx):
     ts = time()
-    msg = await ctx.send('Pong!')
+    msg = await ctx.reply('Pong!')
     tm = (time() - ts) * 1000
     return await msg.edit('{:.2f}ms'.format(tm))
 
