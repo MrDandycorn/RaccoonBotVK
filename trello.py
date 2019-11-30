@@ -22,7 +22,6 @@ async def trello_socket(reader, writer):
             while not data.endswith(b'}'):
                 data += await reader.read(1024)
             if data:
-                print(data)
                 sock = writer.get_extra_info('socket')
                 client_host, client_port = sock.getpeername()
                 if client_host in ['107.23.104.115', '107.23.149.70', '54.152.166.250', '54.164.77.56', '54.209.149.230']:
