@@ -1,76 +1,31 @@
 from anilist import *
 from trello import *
 from mangatown import *
-from time import sleep
-from multiprocessing import Process
-from credentials import vkRaccoonBotID, vkPersUserID
 
-server = ''
-key = ''
-token = ''
+from vk_botting.ext import bot
+from credentials import vkRaccoonBotKey
+from time import time
+import asyncio
 
-
-def handleUpdate(update):
-    if update['type'] == 'message_new':
-        if update['object']['from_id'] == int(vkPersUserID):
-            pass
+racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or('!'))
 
 
-def getLongPollServer():
-    global server, key
-    url = 'https://api.vk.com/method/groups.getLongPollServer'
-    payload = {'access_token': vkRaccoonBotKey, 'v': '5.80',
-               'group_id': vkRaccoonBotID}
-    res = requests.get(url, params=payload).json()
-    print('Запущена сессия LongPoll')
-    tempdict = res['response']
-    key = tempdict['key']
-    server = tempdict['server'].replace('\/', '/')
-    ts = tempdict['ts']
-    return ts
+@racc.listen()
+async def on_ready(info):
+    print(f'Logged in as {info.group.name}')
+    loop = asyncio.get_event_loop()
+    loop.create_task(update_manga())
+    loop.create_task(al_check())
+    loop.create_task(update_rss())
+    loop.create_task(asyncio.start_server(trello_socket, '', 9083))
 
 
-def longPoll(ts):
-    payload = {'key': key, 'act': 'a_check',
-               'ts': ts, 'wait': '10'}
-    res = requests.get(server, params=payload, timeout=20).json()
-    if 'ts' in res.keys():
-        ts = res['ts']
-    else:
-        ts = getLongPollServer()
-    if 'updates' in res.keys():
-        updates = res['updates']
-        for update in updates:
-            Process(target=handleUpdate, args=[update]).start()
-        return ts
+@racc.command(name='ping', pass_context=True, help='Команда для проверки жизнеспособности бота', usage='{}ping')
+async def ping_(ctx):
+    ts = time()
+    msg = await ctx.send('Pong!')
+    tm = (time() - ts) * 1000
+    return await msg.edit('{:.2f}ms'.format(tm))
 
 
-def all_cycle():
-    print('Основной цикл запущен')
-    while True:
-        try:
-            al_check()
-            update_rss()
-            update_manga()
-            sleep(60)
-        except Exception as e:
-            print(f'Ошибка: {e}')
-            sleep(60)
-
-
-def main():
-    global token
-    while True:
-        try:
-            token = getLongPollServer()
-            while True:
-                token = longPoll(token)
-        except Exception as e:
-            token = ''
-            print('Ошибка: ' + str(e))
-
-
-if __name__ == '__main__':
-    Process(target=main).start()
-    Process(target=trello_socket).start()
-    Process(target=all_cycle).start()
+racc.run()

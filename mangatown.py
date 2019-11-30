@@ -1,25 +1,27 @@
-import requests
+import httpx
 from json import load, dump
 from bs4 import BeautifulSoup
 from utils import vkMsg
 from credentials import vkPersUserID
+import asyncio
 
 
-def getChapters(url):
-    res = requests.get(url).text
-    bs = BeautifulSoup(res, features='lxml')
+async def getChapters(url):
+    async with httpx.AsyncClient() as client:
+        res = await client.get(url)
+    bs = BeautifulSoup(res.text, features='lxml')
     chaps = bs.find('ul', {'class': 'chapter_list'}).findAll('li')
     chaps = [(chap.a.text.strip(), chap.find('span', {'class': 'time'}).text) for chap in chaps]
     return chaps
 
 
-def initManga(manga):
-    chaps = getChapters(manga['url'])
+async def initManga(manga):
+    chaps = await getChapters(manga['url'])
     manga['latest'] = chaps[0][0]
 
 
-def checkManga(manga):
-    chaps = getChapters(manga['url'])
+async def checkManga(manga):
+    chaps = await getChapters(manga['url'])
     if chaps[0][0] != manga['latest']:
         news = []
         for chap in chaps:
@@ -31,14 +33,20 @@ def checkManga(manga):
                 break
         manga['latest'] = chaps[0][0]
         for new in reversed(news):
-            vkMsg(vkPersUserID, new)
+            await vkMsg(vkPersUserID, new)
 
 
-def update_manga():
-    mangas = load(open('resources/mangas.json', 'r'))
-    for manga in mangas:
-        if list(manga.keys()) == ['url']:
-            initManga(manga)
-        else:
-            checkManga(manga)
-    dump(mangas, open('resources/mangas.json', 'w+'))
+async def update_manga():
+    while True:
+        try:
+            mangas = load(open('resources/mangas.json', 'r'))
+            for manga in mangas:
+                if list(manga.keys()) == ['url']:
+                    await initManga(manga)
+                else:
+                    await checkManga(manga)
+            dump(mangas, open('resources/mangas.json', 'w+'))
+        except Exception as e:
+            print(f'Ошибка в update_manga: {e}')
+        finally:
+            await asyncio.sleep(60)
