@@ -34,7 +34,7 @@ async def update_notifications():
     ncnt = await graphql_request(query)
     ncnt = ncnt['data']['Viewer']['unreadNotificationCount']
     if ncnt != 0:
-        notifs = get_notifications(ncnt)
+        notifs = await get_notifications(ncnt)
         for notif in notifs:
             if notif['type'] == 'AIRING':
                 q.append(notif['media']['title']['userPreferred'])
