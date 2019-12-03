@@ -47,5 +47,7 @@ async def update_manga():
                 else:
                     await checkManga(manga)
             dump(mangas, open('resources/mangas.json', 'w+'))
+        except Exception as e:
+            print(f'Exception in update_manga: {e}')
         finally:
             await asyncio.sleep(60)

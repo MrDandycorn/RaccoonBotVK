@@ -107,5 +107,7 @@ async def al_check():
             if notifs:
                 async for notif in notifs:
                     await vkMsg(vkPersUserID, notif)
+        except Exception as e:
+            print(f'Exception in al_check: {e}')
         finally:
             await asyncio.sleep(60)
