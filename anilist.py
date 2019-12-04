@@ -1,6 +1,6 @@
 from credentials import anilist_token, vkPersUserID
 import aiohttp
-from utils import vkMsg
+from vk_botting import Cog
 from time import time, mktime
 import feedparser as fp
 import re
@@ -75,41 +75,51 @@ def scrape(title):
     return res, int(ep), group
 
 
-async def update_rss():
-    while True:
-        try:
-            async with aiohttp.ClientSession() as session:
-                hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
-                esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
-                hsubs = await hsubs.text()
-                esubs = await esubs.text()
-            hsubs = fp.parse(hsubs)['entries']
-            esubs = fp.parse(esubs)['entries']
-            for sub in hsubs+esubs:
-                dt = sub['published_parsed']
-                if time() - mktime(dt) < 30000:
-                    scraped = scrape(sub['title'])
-                    info = await search_anilist(scraped[0])
-                    for _ in range(len(q)):
-                        title = q.pop(0)
-                        if info[0] == title:
-                            await vkMsg(vkPersUserID, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
-                        else:
-                            q.append(title)
-        except Exception as e:
-            print(f'Exception in update_rss: {e}')
-        finally:
-            await asyncio.sleep(60)
+class anilist(Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        bot.loop.create_task(self.al_check())
+        bot.loop.create_task(self.update_rss())
+
+    async def update_rss(self):
+        while True:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
+                    esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
+                    hsubs = await hsubs.text()
+                    esubs = await esubs.text()
+                hsubs = fp.parse(hsubs)['entries']
+                esubs = fp.parse(esubs)['entries']
+                for sub in hsubs+esubs:
+                    dt = sub['published_parsed']
+                    if time() - mktime(dt) < 30000:
+                        scraped = scrape(sub['title'])
+                        info = await search_anilist(scraped[0])
+                        for _ in range(len(q)):
+                            title = q.pop(0)
+                            if info[0] == title:
+                                await self.bot.send_message(vkPersUserID, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
+                            else:
+                                q.append(title)
+            except Exception as e:
+                print(f'Exception in update_rss: {e}')
+            finally:
+                await asyncio.sleep(60)
+
+    async def al_check(self):
+        while True:
+            try:
+                notifs = update_notifications()
+                if notifs:
+                    async for notif in notifs:
+                        await self.bot.send_message(vkPersUserID, notif)
+            except Exception as e:
+                print(f'Exception in al_check: {e}')
+            finally:
+                await asyncio.sleep(60)
 
 
-async def al_check():
-    while True:
-        try:
-            notifs = update_notifications()
-            if notifs:
-                async for notif in notifs:
-                    await vkMsg(vkPersUserID, notif)
-        except Exception as e:
-            print(f'Exception in al_check: {e}')
-        finally:
-            await asyncio.sleep(60)
+def anilist_setup(bot):
+    bot.add_cog(anilist(bot))
