@@ -2,11 +2,11 @@ from anilist import *
 from trello import *
 from mangatown import *
 
-from vk_botting.ext import bot
+from vk_botting import bot
 from credentials import vkRaccoonBotKey
 from time import time
 
-racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or('!'))
+racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or_pm_or('!'))
 
 
 @racc.listen()

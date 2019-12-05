@@ -1,6 +1,6 @@
 from credentials import anilist_token, vkPersUserID
 import aiohttp
-from vk_botting import Cog
+from vk_botting import commands, in_user_list
 from time import time, mktime
 import feedparser as fp
 import re
@@ -75,12 +75,27 @@ def scrape(title):
     return res, int(ep), group
 
 
-class anilist(Cog):
+class anilist(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
         bot.loop.create_task(self.al_check())
         bot.loop.create_task(self.update_rss())
+
+    @commands.command(aliases=['airing', 'air'])
+    @in_user_list(vkPersUserID)
+    async def mine(self, ctx):
+        query = 'query{anime:Page(perPage:200){results:media(type:ANIME,status:RELEASING,onList:true){id,title{userPreferred},nextAiringEpisode{airingAt,timeUntilAiring,episode}}}}'
+        res = await graphql_request(query)
+        airing = res['data']['anime']['results']
+        msg = ''
+        for air in airing:
+            dt = datetime.fromtimestamp(air['nextAiringEpisode']['airingAt'])
+            if dt.date() == datetime.today().date():
+                msg += f'{air["title"]["userPreferred"]} | {dt.hour}:{dt.minute}\n'
+        if not msg:
+            msg = 'Не осталось аниме на сегодня :c'
+        return await ctx.reply(msg)
 
     async def update_rss(self):
         while True:
