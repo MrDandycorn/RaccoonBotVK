@@ -5,7 +5,7 @@ from anilist import *
 from mangatown import *
 from trello import *
 
-racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or_pm_or('!'))
+racc = bot.Bot(command_prefix=bot.when_mentioned_or_pm_or('!'), case_insensitive=True)
 
 
 @racc.listen()
@@ -24,4 +24,4 @@ async def ping_(ctx):
     return await msg.edit('{:.2f}ms'.format(tm))
 
 
-racc.run()
+racc.run(vkRaccoonBotKey)
