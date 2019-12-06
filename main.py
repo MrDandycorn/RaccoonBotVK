@@ -1,10 +1,9 @@
-from anilist import *
-from trello import *
-from mangatown import *
-
-from vk_botting import bot
 from credentials import vkRaccoonBotKey
-from time import time
+from vk_botting import bot
+
+from anilist import *
+from mangatown import *
+from trello import *
 
 racc = bot.Bot(token=vkRaccoonBotKey, command_prefix=bot.when_mentioned_or_pm_or('!'))
 

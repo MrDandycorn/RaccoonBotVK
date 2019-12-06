@@ -1,8 +1,9 @@
-from json import load, dump
-from bs4 import BeautifulSoup
-from vk_botting import Cog
-from credentials import vkPersUserID
 import asyncio
+from json import load, dump
+
+from bs4 import BeautifulSoup
+from credentials import vkPersUserID
+from vk_botting import Cog
 
 
 class mangatown(Cog):

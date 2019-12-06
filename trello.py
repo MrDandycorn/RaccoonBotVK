@@ -1,7 +1,8 @@
+import asyncio
 from json import loads
+
 from credentials import trello_key, trello_token, vkPersUserID
 from vk_botting import Cog
-import asyncio
 
 
 class trello(Cog):

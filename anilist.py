@@ -1,11 +1,12 @@
-from credentials import anilist_token, vkPersUserID
-import aiohttp
-from vk_botting import commands, in_user_list
-from time import time, mktime
-import feedparser as fp
+import asyncio
 import re
 from datetime import datetime
-import asyncio
+from time import time, mktime
+
+import aiohttp
+import feedparser as fp
+from credentials import anilist_token, vkPersUserID
+from vk_botting import commands, in_user_list
 
 q = []
 
@@ -41,7 +42,7 @@ async def update_notifications():
                 yield f'Вышла {notif["episode"]} серия {notif["media"]["title"]["userPreferred"]}'
             elif notif['type'] == 'RELATED_MEDIA_ADDITION':
                 s = 'На сайт добавлено новое аниме: {}\n{}' if notif['media']['type'] == 'ANIME' else 'На сайт добавлена новая манга/новелла: {}\n{}'
-                yield s.format(notif['media']['title']['userPreferred'], notif['media']['siteUrl'].replace('\/', '/'))
+                yield s.format(notif['media']['title']['userPreferred'], notif['media']['siteUrl'].replace(r'\/', '/'))
 
 
 async def search_anilist(title):
@@ -88,11 +89,13 @@ class anilist(commands.Cog):
         query = 'query{anime:Page(perPage:200){results:media(type:ANIME,status:RELEASING,onList:true){id,title{userPreferred},nextAiringEpisode{airingAt,timeUntilAiring,episode}}}}'
         res = await graphql_request(query)
         airing = res['data']['anime']['results']
+        airing = sorted(airing, key=lambda x: x['nextAiringEpisode']['airingAt'])
         msg = ''
         for air in airing:
             dt = datetime.fromtimestamp(air['nextAiringEpisode']['airingAt'])
+            dtr = datetime.utcfromtimestamp(air['nextAiringEpisode']['timeUntilAiring']).time()
             if dt.date() == datetime.today().date():
-                msg += f'{air["title"]["userPreferred"]} | {dt.hour}:{dt.minute}\n'
+                msg += f'{air["title"]["userPreferred"]} | {dt.hour}:{dt.minute} | in {dtr.hour}:{dtr.minute}:{dtr.second}\n'
         if not msg:
             msg = 'Не осталось аниме на сегодня :c'
         return await ctx.reply(msg)
