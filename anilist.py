@@ -93,9 +93,11 @@ class anilist(commands.Cog):
         msg = ''
         for air in airing:
             dt = datetime.fromtimestamp(air['nextAiringEpisode']['airingAt'])
-            dtr = datetime.utcfromtimestamp(air['nextAiringEpisode']['timeUntilAiring']).time()
+            dtf = dt.strftime('%H:%M')
             if dt.date() == datetime.today().date():
-                msg += f'{air["title"]["userPreferred"]} | {dt.hour}:{dt.minute} | in {dtr.hour}:{dtr.minute}:{dtr.second}\n'
+                dtr = datetime.utcfromtimestamp(air['nextAiringEpisode']['timeUntilAiring']).time()
+                dtrf = dtr.strftime('%H:%M:%S')
+                msg += f'{air["title"]["userPreferred"]} | {dtf} | in {dtrf}\n'
         if not msg:
             msg = 'Не осталось аниме на сегодня :c'
         return await ctx.reply(msg)
