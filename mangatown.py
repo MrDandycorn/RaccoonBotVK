@@ -6,7 +6,7 @@ from credentials import vkPersUserID
 from vk_botting import Cog
 
 
-class mangatown(Cog):
+class Mangatown(Cog):
     def __init__(self, bot):
         self.bot = bot
         bot.loop.create_task(self.update_manga())
@@ -54,4 +54,4 @@ class mangatown(Cog):
 
 
 def mangatown_setup(bot):
-    bot.add_cog(mangatown(bot))
+    bot.add_cog(Mangatown(bot))

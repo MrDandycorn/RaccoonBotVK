@@ -5,7 +5,7 @@ from credentials import trello_key, trello_token, vkPersUserID
 from vk_botting import Cog
 
 
-class trello(Cog):
+class Trello(Cog):
     def __init(self, bot):
         self.bot = bot
         bot.loop.create_task(asyncio.start_server(self.trello_socket, '', 9083))
@@ -72,4 +72,4 @@ class trello(Cog):
 
 
 def trello_setup(bot):
-    bot.add_cog(trello(bot))
+    bot.add_cog(Trello(bot))

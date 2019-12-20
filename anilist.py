@@ -76,7 +76,7 @@ def scrape(title):
     return res, int(ep), group
 
 
-class anilist(commands.Cog):
+class Anilist(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -142,4 +142,4 @@ class anilist(commands.Cog):
 
 
 def anilist_setup(bot):
-    bot.add_cog(anilist(bot))
+    bot.add_cog(Anilist(bot))
