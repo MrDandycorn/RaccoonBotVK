@@ -2,11 +2,12 @@ from json import load, dump
 import asyncio
 
 from credentials import vkPersUserID
-from vk_botting import Cog, command, in_user_list
+from vk_botting import Cog, command, in_user_list, __version__
 
 
 class Todo(Cog):
     def __init__(self, bot):
+        print(__version__)
         self.bot = bot
         try:
             self.tasks = load(open('resources/todo.json', 'r'))
