@@ -18,7 +18,7 @@ async def on_ready():
     todo_setup(racc)
 
 
-@racc.command(name='ping', pass_context=True, help='Команда для проверки жизнеспособности бота', usage='{}ping')
+@racc.command(name='ping')
 async def ping_(ctx):
     ts = time()
     msg = await ctx.reply('Pong!')
