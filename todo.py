@@ -64,6 +64,11 @@ class Todo(Cog):
             self.edit_task(int(add), msg.text)
             return await ctx.reply(f'Изменена задача {add}')
 
+    @command(name='test 1 2', aliases=['test 1 222'])
+    async def test_command(self, ctx, *args):
+        print(args)
+        return await ctx.send(args)
+
 
 def todo_setup(bot):
     bot.add_cog(Todo(bot))
