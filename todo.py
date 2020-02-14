@@ -2,12 +2,11 @@ from json import load, dump
 import asyncio
 
 from credentials import vkPersUserID
-from vk_botting import Cog, command, in_user_list, __version__
+from vk_botting import Cog, command, in_user_list
 
 
 class Todo(Cog):
     def __init__(self, bot):
-        print(__version__)
         self.bot = bot
         try:
             self.tasks = load(open('resources/todo.json', 'r'))
@@ -64,11 +63,6 @@ class Todo(Cog):
                 return
             self.edit_task(int(add), msg.text)
             return await ctx.reply(f'Изменена задача {add}')
-
-    @command(name='test 1 2', aliases=['test 1 222'])
-    async def test_command(self, ctx, *args):
-        print(args)
-        return await ctx.send(args)
 
 
 def todo_setup(bot):
