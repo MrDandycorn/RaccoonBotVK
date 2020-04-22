@@ -5,16 +5,21 @@ from time import time, mktime
 
 import aiohttp
 import feedparser as fp
-from credentials import anilist_token, vkPersUserID
-from vk_botting import commands, in_user_list
+from credentials import anilist_token, voron_anilist_token
+from vk_botting import commands
 
-q = []
+tokens = {
+    223823744: anilist_token,
+    459278596: voron_anilist_token
+}
+
+q = dict([(user, []) for user in tokens])
 
 
-async def graphql_request(query):
+async def graphql_request(query, uid):
     url = 'https://graphql.anilist.co'
     headers = {
-        'Authorization': 'Bearer '+anilist_token
+        'Authorization': 'Bearer ' + tokens[uid]
     }
     data = {
         'query': query
@@ -24,30 +29,30 @@ async def graphql_request(query):
         return await res.json()
 
 
-async def get_notifications(count):
+async def get_notifications(count, uid):
     query = 'query{Page(perPage: '+str(count)+') {notifications(type_in: [AIRING, ACTIVITY_MESSAGE, ACTIVITY_REPLY, FOLLOWING, ACTIVITY_MENTION, THREAD_COMMENT_MENTION, THREAD_SUBSCRIBED, THREAD_COMMENT_REPLY, ACTIVITY_LIKE, ACTIVITY_REPLY_LIKE, THREAD_LIKE, THREAD_COMMENT_LIKE, ACTIVITY_REPLY_SUBSCRIBED, RELATED_MEDIA_ADDITION], resetNotificationCount: true) {... on AiringNotification {type,episode,media {id,type,title {userPreferred}}}... on RelatedMediaAdditionNotification {type,media {id,type,title {userPreferred},siteUrl}}... on FollowingNotification {type}... on ActivityMessageNotification {type}... on ActivityMentionNotification {type}... on ActivityReplyNotification {type}... on ActivityReplySubscribedNotification {type}... on ActivityLikeNotification {type}... on ActivityReplyLikeNotification {type}... on ThreadCommentMentionNotification {type}... on ThreadCommentReplyNotification {type}... on ThreadCommentSubscribedNotification {type}... on ThreadCommentLikeNotification {type}... on ThreadLikeNotification {type}}}}'
-    res = await graphql_request(query)
+    res = await graphql_request(query, uid)
     return res['data']['Page']['notifications']
 
 
-async def update_notifications():
+async def update_notifications(uid):
     query = '{Viewer{unreadNotificationCount}}'
-    ncnt = await graphql_request(query)
+    ncnt = await graphql_request(query, uid)
     ncnt = ncnt['data']['Viewer']['unreadNotificationCount']
     if ncnt != 0:
-        notifs = await get_notifications(ncnt)
+        notifs = await get_notifications(ncnt, uid)
         for notif in notifs:
             if notif['type'] == 'AIRING':
-                q.append(notif['media']['title']['userPreferred'])
+                q[uid].append(notif['media']['title']['userPreferred'])
                 yield f'Вышла {notif["episode"]} серия {notif["media"]["title"]["userPreferred"]}'
             elif notif['type'] == 'RELATED_MEDIA_ADDITION':
                 s = 'На сайт добавлено новое аниме: {}\n{}' if notif['media']['type'] == 'ANIME' else 'На сайт добавлена новая манга/новелла: {}\n{}'
                 yield s.format(notif['media']['title']['userPreferred'], notif['media']['siteUrl'].replace(r'\/', '/'))
 
 
-async def search_anilist(title):
+async def search_anilist(title, uid):
     query = 'query{anime:Page(perPage: 20){results: media(type: ANIME, isAdult: false, search: "'+title+'"){title {userPreferred},nextAiringEpisode{episode},status, endDate{year,month,day}}}}'
-    res = await graphql_request(query)
+    res = await graphql_request(query, uid)
     res = res['data']['anime']['results']
     if res:
         for anime in res:
@@ -84,10 +89,11 @@ class Anilist(commands.Cog):
         bot.loop.create_task(self.update_rss())
 
     @commands.command(aliases=['airing', 'air'])
-    @in_user_list(vkPersUserID)
     async def mine(self, ctx):
+        if ctx.from_id not in anilist_token:
+            return
         query = 'query{anime:Page(perPage:200){results:media(type:ANIME,status:RELEASING,onList:true){id,title{userPreferred},nextAiringEpisode{airingAt,timeUntilAiring,episode}}}}'
-        res = await graphql_request(query)
+        res = await graphql_request(query, ctx.from_id)
         airing = res['data']['anime']['results']
         airing = sorted(airing, key=lambda x: x['nextAiringEpisode']['airingAt'])
         msg = ''
@@ -105,24 +111,25 @@ class Anilist(commands.Cog):
     async def update_rss(self):
         while True:
             try:
-                async with aiohttp.ClientSession() as session:
-                    hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
-                    esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
-                    hsubs = await hsubs.text()
-                    esubs = await esubs.text()
-                hsubs = fp.parse(hsubs)['entries']
-                esubs = fp.parse(esubs)['entries']
-                for sub in hsubs+esubs:
-                    dt = sub['published_parsed']
-                    if time() - mktime(dt) < 30000:
-                        scraped = scrape(sub['title'])
-                        info = await search_anilist(scraped[0])
-                        for _ in range(len(q)):
-                            title = q.pop(0)
-                            if info[0] == title:
-                                await self.bot.send_message(vkPersUserID, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
-                            else:
-                                q.append(title)
+                for uid in anilist_token:
+                    async with aiohttp.ClientSession() as session:
+                        hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
+                        esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
+                        hsubs = await hsubs.text()
+                        esubs = await esubs.text()
+                    hsubs = fp.parse(hsubs)['entries']
+                    esubs = fp.parse(esubs)['entries']
+                    for sub in hsubs+esubs:
+                        dt = sub['published_parsed']
+                        if time() - mktime(dt) < 30000:
+                            scraped = scrape(sub['title'])
+                            info = await search_anilist(scraped[0], uid)
+                            for _ in range(len(q[uid])):
+                                title = q[uid].pop(0)
+                                if info[0] == title:
+                                    await self.bot.send_message(uid, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
+                                else:
+                                    q[uid].append(title)
             except Exception as e:
                 print(f'Exception in update_rss: {e}')
             finally:
@@ -131,10 +138,11 @@ class Anilist(commands.Cog):
     async def al_check(self):
         while True:
             try:
-                notifs = update_notifications()
-                if notifs:
-                    async for notif in notifs:
-                        await self.bot.send_message(vkPersUserID, notif)
+                for uid in anilist_token:
+                    notifs = update_notifications(uid)
+                    if notifs:
+                        async for notif in notifs:
+                            await self.bot.send_message(uid, notif)
             except Exception as e:
                 print(f'Exception in al_check: {e}')
             finally:

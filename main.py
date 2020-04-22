@@ -1,5 +1,5 @@
-from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token
-from vk_botting import bot
+from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token, vkPersUserID
+from vk_botting import bot, in_user_list
 
 from anilist import *
 from mangatown import *
@@ -28,6 +28,7 @@ async def ping_(ctx):
 
 
 @racc.command(name='status', aliases=['s'])
+@in_user_list(vkPersUserID)
 async def change_status(ctx, *, status):
     headers = {'Authorization': discord_user_token, 'Content-Type': 'application/json'}
     body = f"""{{"custom_status": {{"text": "{status}",
@@ -40,6 +41,7 @@ async def change_status(ctx, *, status):
 
 
 @racc.command(name='return', aliases=['reset', 'r'])
+@in_user_list(vkPersUserID)
 async def reset_status(ctx):
     headers = {'Authorization': discord_user_token, 'Content-Type': 'application/json'}
     body = f"""{{"custom_status": {{"text": null,
