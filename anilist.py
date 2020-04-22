@@ -90,7 +90,7 @@ class Anilist(commands.Cog):
 
     @commands.command(aliases=['airing', 'air'])
     async def mine(self, ctx):
-        if ctx.from_id not in anilist_token:
+        if ctx.from_id not in tokens:
             return
         query = 'query{anime:Page(perPage:200){results:media(type:ANIME,status:RELEASING,onList:true){id,title{userPreferred},nextAiringEpisode{airingAt,timeUntilAiring,episode}}}}'
         res = await graphql_request(query, ctx.from_id)
@@ -111,7 +111,7 @@ class Anilist(commands.Cog):
     async def update_rss(self):
         while True:
             try:
-                for uid in anilist_token:
+                for uid in tokens:
                     async with aiohttp.ClientSession() as session:
                         hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
                         esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
@@ -138,7 +138,7 @@ class Anilist(commands.Cog):
     async def al_check(self):
         while True:
             try:
-                for uid in anilist_token:
+                for uid in tokens:
                     notifs = update_notifications(uid)
                     if notifs:
                         async for notif in notifs:
