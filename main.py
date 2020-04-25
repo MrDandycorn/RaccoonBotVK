@@ -1,5 +1,5 @@
-from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token, vkPersUserID
-from vk_botting import bot, in_user_list
+from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token
+from vk_botting import bot
 
 from anilist import *
 from mangatown import *
