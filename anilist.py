@@ -111,25 +111,28 @@ class Anilist(commands.Cog):
     async def update_rss(self):
         while True:
             try:
+                async with aiohttp.ClientSession() as session:
+                    hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
+                    esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
+                    hsubs = await hsubs.text()
+                    esubs = await esubs.text()
+                hsubs = fp.parse(hsubs)['entries']
+                esubs = fp.parse(esubs)['entries']
                 for uid in tokens:
-                    async with aiohttp.ClientSession() as session:
-                        hsubs = await session.get('http://www.horriblesubs.info/rss.php?res=1080')
-                        esubs = await session.get('https://ru.erai-raws.info/rss-1080/')
-                        hsubs = await hsubs.text()
-                        esubs = await esubs.text()
-                    hsubs = fp.parse(hsubs)['entries']
-                    esubs = fp.parse(esubs)['entries']
-                    for sub in hsubs+esubs:
-                        dt = sub['published_parsed']
-                        if time() - mktime(dt) < 30000:
-                            scraped = scrape(sub['title'])
-                            info = await search_anilist(scraped[0], uid)
-                            for _ in range(len(q[uid])):
-                                title = q[uid].pop(0)
-                                if info[0] == title:
-                                    await self.bot.send_message(uid, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
-                                else:
-                                    q[uid].append(title)
+                    try:
+                        for sub in hsubs+esubs:
+                            dt = sub['published_parsed']
+                            if time() - mktime(dt) < 30000:
+                                scraped = scrape(sub['title'])
+                                info = await search_anilist(scraped[0], uid)
+                                for _ in range(len(q[uid])):
+                                    title = q[uid].pop(0)
+                                    if info[0] == title:
+                                        await self.bot.send_message(uid, f'{scraped[1]} серия {title} вышла в субтитрах от {scraped[2]}!')
+                                    else:
+                                        q[uid].append(title)
+                    except Exception as e:
+                        print(f'Exception in update_rss for {uid}: {e}')
             except Exception as e:
                 print(f'Exception in update_rss: {e}')
             finally:

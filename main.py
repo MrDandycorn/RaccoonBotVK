@@ -1,8 +1,8 @@
-from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token, vkPersUserID
-from vk_botting import bot, in_user_list
+from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token
+from vk_botting import bot
 
 from anilist import *
-from mangatown import *
+# from mangatown import *
 from trello import *
 from todo import *
 
@@ -12,7 +12,7 @@ racc = bot.Bot(command_prefix=bot.when_mentioned_or_pm_or('!'), case_insensitive
 @racc.listen()
 async def on_ready():
     print(f'Logged in as {racc.group.name}')
-    mangatown_setup(racc)
+    # mangatown_setup(racc)
     anilist_setup(racc)
     trello_setup(racc)
     todo_setup(racc)
@@ -51,6 +51,19 @@ async def reset_status(ctx):
     await racc.session.patch('https://discordapp.com/api/v6/users/@me/settings', headers=headers, data=body.encode('utf-8'))
     await racc.user_vk_request('status.set', text='В активном поиске тайтлов')
     return await ctx.reply(f'Статусы сброшены!')
+
+
+@racc.command(name='выполни', aliases=['eval', 'exec'])
+@in_user_list(vkPersUserID)
+async def exec_(self, ctx, *, code):
+    exec(
+        f'async def __ex(ctx): ' +
+        ''.join(f'\n    {line}' for line in code.split('\n'))
+    )
+    result = await locals()['__ex'](ctx)
+    if result is None:
+        result = ':)'
+    return await ctx.send(result)
 
 
 racc.run(vkRaccoonBotKey)
