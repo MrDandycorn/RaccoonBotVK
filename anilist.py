@@ -95,7 +95,7 @@ class Anilist(commands.Cog):
         query = 'query{anime:Page(perPage:200){results:media(type:ANIME,status:RELEASING,onList:true){id,title{userPreferred},nextAiringEpisode{airingAt,timeUntilAiring,episode}}}}'
         res = await graphql_request(query, ctx.from_id)
         airing = res['data']['anime']['results']
-        airing = sorted(airing, key=lambda x: x['nextAiringEpisode']['airingAt'])
+        airing = sorted([anime for anime in airing if anime['nextAiringEpisode'] and 'airingAt' in anime['nextAiringEpisode']], key=lambda x: x['nextAiringEpisode']['airingAt'])
         msg = ''
         for air in airing:
             dt = datetime.fromtimestamp(air['nextAiringEpisode']['airingAt'])
