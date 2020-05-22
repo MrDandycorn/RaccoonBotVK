@@ -1,7 +1,7 @@
 import asyncio
 from json import loads
 
-from credentials import trello_key, trello_token, vkPersUserID
+from credentials import trello_key, trello_token, vk_personal_user_id
 from vk_botting import Cog
 
 
@@ -66,7 +66,7 @@ class Trello(Cog):
                                 msg = f'{ents["memberCreator"]["text"]} назначил {ents["member"]["text"]} обычным участником доски'
                             else:
                                 msg = f'Новое уведомление из Trello:\nТип: {action["type"]}\nJson: {str(action["display"])}'
-                            await self.bot.send_message(vkPersUserID, msg)
+                            await self.bot.send_message(vk_personal_user_id, msg)
             except Exception as e:
                 print(f'Exception in trello_socket: {e}')
 

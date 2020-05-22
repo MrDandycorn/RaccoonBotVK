@@ -1,7 +1,7 @@
 from json import load, dump
 import asyncio
 
-from credentials import vkPersUserID
+from credentials import vk_personal_user_id
 from vk_botting import Cog, command, in_user_list
 
 
@@ -38,7 +38,7 @@ class Todo(Cog):
         return '\n'.join([f'{num+1}. {task}' for num, task in enumerate(self.tasks)]) if self.tasks else 'Нет задач'
 
     @command()
-    @in_user_list(vkPersUserID)
+    @in_user_list(vk_personal_user_id)
     async def todo(self, ctx, oper=None, *, add=None):
         if oper is None:
             return await ctx.reply(self.show_tasks())
@@ -53,7 +53,7 @@ class Todo(Cog):
             await ctx.reply(self.tasks[int(add)-1])
 
             def verify(m):
-                return m.from_id == int(vkPersUserID)
+                return m.from_id == vk_personal_user_id
 
             try:
                 msg = await self.bot.wait_for('message_new', check=verify, timeout=600)

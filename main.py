@@ -1,4 +1,4 @@
-from credentials import vkRaccoonBotKey, vkPersMusicKey, discord_user_token
+from credentials import vk_raccoon_bot_token, vk_personal_audio_token, discord_user_token
 from vk_botting import bot
 
 from anilist import *
@@ -16,7 +16,7 @@ async def on_ready():
     anilist_setup(racc)
     trello_setup(racc)
     todo_setup(racc)
-    await racc.attach_user_token(vkPersMusicKey)
+    await racc.attach_user_token(vk_personal_audio_token)
 
 
 @racc.command(name='ping')
@@ -28,7 +28,7 @@ async def ping_(ctx):
 
 
 @racc.command(name='status', aliases=['s'])
-@in_user_list(vkPersUserID)
+@in_user_list(vk_personal_user_id)
 async def change_status(ctx, *, status):
     headers = {'Authorization': discord_user_token, 'Content-Type': 'application/json'}
     body = f"""{{"custom_status": {{"text": "{status}",
@@ -41,7 +41,7 @@ async def change_status(ctx, *, status):
 
 
 @racc.command(name='return', aliases=['reset', 'r'])
-@in_user_list(vkPersUserID)
+@in_user_list(vk_personal_user_id)
 async def reset_status(ctx):
     headers = {'Authorization': discord_user_token, 'Content-Type': 'application/json'}
     body = f"""{{"custom_status": {{"text": null,
@@ -54,7 +54,7 @@ async def reset_status(ctx):
 
 
 @racc.command(name='выполни', aliases=['eval', 'exec'])
-@in_user_list(vkPersUserID)
+@in_user_list(vk_personal_user_id)
 async def exec_(self, ctx, *, code):
     exec(
         f'async def __ex(ctx): ' +
@@ -66,4 +66,4 @@ async def exec_(self, ctx, *, code):
     return await ctx.send(result)
 
 
-racc.run(vkRaccoonBotKey)
+racc.run(vk_raccoon_bot_token)

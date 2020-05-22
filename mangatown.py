@@ -2,7 +2,7 @@ import asyncio
 from json import load, dump
 
 from bs4 import BeautifulSoup
-from credentials import vkPersUserID
+from credentials import vk_personal_user_id
 from vk_botting import Cog
 
 
@@ -35,7 +35,7 @@ class Mangatown(Cog):
                     break
             manga['latest'] = chaps[0][0]
             for new in reversed(news):
-                await self.bot.send_message(vkPersUserID, new)
+                await self.bot.send_message(vk_personal_user_id, new)
 
     async def update_manga(self):
         while True:
