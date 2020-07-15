@@ -55,7 +55,7 @@ async def reset_status(ctx):
 
 @racc.command(name='выполни', aliases=['eval', 'exec'])
 @in_user_list(vk_personal_user_id)
-async def exec_(self, ctx, *, code):
+async def exec_(ctx, *, code):
     exec(
         f'async def __ex(ctx): ' +
         ''.join(f'\n    {line}' for line in code.split('\n'))
