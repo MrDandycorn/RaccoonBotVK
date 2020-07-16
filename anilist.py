@@ -5,12 +5,11 @@ from time import time, mktime
 
 import aiohttp
 import feedparser as fp
-from credentials import anilist_token, voron_anilist_token, vk_personal_user_id
+from credentials import anilist_token, vk_personal_user_id
 from vk_botting import commands
 
 tokens = {
-    vk_personal_user_id: anilist_token,
-    459278596: voron_anilist_token
+    vk_personal_user_id: anilist_token
 }
 
 q = dict([(user, []) for user in tokens])
