@@ -2,8 +2,6 @@ from credentials import vk_raccoon_bot_token, vk_personal_audio_token, discord_u
 from vk_botting import bot
 
 from anilist import *
-# from mangatown import *
-from trello import *
 from todo import *
 
 racc = bot.Bot(command_prefix=bot.when_mentioned_or_pm_or('!'), case_insensitive=True)
@@ -12,9 +10,7 @@ racc = bot.Bot(command_prefix=bot.when_mentioned_or_pm_or('!'), case_insensitive
 @racc.listen()
 async def on_ready():
     print(f'Logged in as {racc.group.name}')
-    # mangatown_setup(racc)
     anilist_setup(racc)
-    trello_setup(racc)
     todo_setup(racc)
     await racc.attach_user_token(vk_personal_audio_token)
 
