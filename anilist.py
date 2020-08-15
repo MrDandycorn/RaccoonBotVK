@@ -6,7 +6,7 @@ from time import time, mktime
 import aiohttp
 import feedparser as fp
 from credentials import anilist_token, vk_personal_user_id
-from vk_botting import commands
+from vk_botting import Cog, command
 
 tokens = {
     vk_personal_user_id: anilist_token
@@ -80,14 +80,14 @@ def scrape(title):
     return res, int(ep), group
 
 
-class Anilist(commands.Cog):
+class Anilist(Cog):
 
     def __init__(self, bot):
         self.bot = bot
         bot.loop.create_task(self.al_check())
         bot.loop.create_task(self.update_rss())
 
-    @commands.command(aliases=['airing', 'air'])
+    @command(aliases=['airing', 'air'])
     async def mine(self, ctx):
         if ctx.from_id not in tokens:
             return

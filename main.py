@@ -1,10 +1,10 @@
 from credentials import vk_raccoon_bot_token, vk_personal_audio_token, discord_user_token
-from vk_botting import bot
+from vk_botting import Bot, when_mentioned_or_pm_or
 
 from anilist import *
 from todo import *
 
-racc = bot.Bot(command_prefix=bot.when_mentioned_or_pm_or('!'), case_insensitive=True)
+racc = Bot(command_prefix=when_mentioned_or_pm_or('!'), case_insensitive=True)
 
 
 @racc.listen()
