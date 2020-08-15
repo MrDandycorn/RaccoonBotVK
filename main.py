@@ -40,12 +40,12 @@ async def change_status(ctx, *, status):
 @in_user_list(vk_personal_user_id)
 async def reset_status(ctx):
     headers = {'Authorization': discord_user_token, 'Content-Type': 'application/json'}
-    body = f"""{{"custom_status": {{"text": null,
+    body = f"""{{"custom_status": {{"text": "Can We Live a Real Life?",
 "expires_at": null,
 "emoji_id": null,
 "emoji_name": null}}}}"""
     await racc.session.patch('https://discordapp.com/api/v6/users/@me/settings', headers=headers, data=body.encode('utf-8'))
-    await racc.user_vk_request('status.set', text='В активном поиске тайтлов')
+    await racc.user_vk_request('status.set', text='Тут должен был быть статус но у меня его нет')
     return await ctx.reply(f'Статусы сброшены!')
 
 
